@@ -3,17 +3,36 @@
 
 tasks = []
 
+FILENAME = "tasks.txt"
+
+def load_tasks():
+    try:
+        with open(FILENAME, "r", encoding="utf-8") as f:
+            for line in f:
+                task = line.strip()
+                if task:
+                    tasks.append(task)
+    except FileNotFoundError:
+        pass  # اگر فایل نبود، کاری نمی‌کنیم
+
+def save_tasks():
+    with open(FILENAME, "w", encoding="utf-8") as f:
+        for task in tasks:
+            f.write(task + "\n")
+
 def add_task(task):
     if task in tasks:
         print(f"⚠️ وظیفه '{task}' قبلاً اضافه شده.")
     else:
         tasks.append(task)
         print(f"✅ وظیفه '{task}' اضافه شد.")
+        save_tasks()
 
 def remove_task(task):
     if task in tasks:
         tasks.remove(task)
         print(f"🗑️ وظیفه '{task}' حذف شد.")
+        save_tasks()
     else:
         print(f"⚠️ وظیفه '{task}' پیدا نشد.")
 
@@ -38,6 +57,7 @@ def welcome():
     print("✨ با این ابزار ساده می‌تونی وظایف‌ت رو بهتر مدیریت کنی.")
 
 if __name__ == "__main__":
+    load_tasks()
     welcome()
     while True:
         show_menu()
