@@ -1,9 +1,6 @@
 # پروژه: مدیریت وظایف روزانه
 # نویسنده: امیرحسین شیری
-# این خط برای گرفتن YOLO Achievement اضافه شده است
-# go
-# YOLO attempt — this time with a witness 😎
-    
+
 tasks = []
 
 FILENAME = "tasks.txt"
@@ -16,6 +13,7 @@ def load_tasks():
                 if len(parts) == 2:
                     task, status = parts
                     tasks.append({"text": task, "done": status == "done"})
+        print(f"📦 {len(tasks)} وظیفه بارگذاری شد.")  # 👈 تغییر مفید یک‌خطی
     except FileNotFoundError:
         pass
 
