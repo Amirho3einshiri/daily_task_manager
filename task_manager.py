@@ -9,38 +9,52 @@ def load_tasks():
     try:
         with open(FILENAME, "r", encoding="utf-8") as f:
             for line in f:
-                task = line.strip()
-                if task:
-                    tasks.append(task)
+                parts = line.strip().split("||")
+                if len(parts) == 2:
+                    task, status = parts
+                    tasks.append({"text": task, "done": status == "done"})
     except FileNotFoundError:
-        pass  # اگر فایل نبود، کاری نمی‌کنیم
+        pass
 
 def save_tasks():
     with open(FILENAME, "w", encoding="utf-8") as f:
         for task in tasks:
-            f.write(task + "\n")
+            status = "done" if task["done"] else "todo"
+            f.write(f"{task['text']}||{status}\n")
 
-def add_task(task):
-    if task in tasks:
-        print(f"⚠️ وظیفه '{task}' قبلاً اضافه شده.")
-    else:
-        tasks.append(task)
-        print(f"✅ وظیفه '{task}' اضافه شد.")
-        save_tasks()
+def add_task(task_text):
+    for task in tasks:
+        if task["text"] == task_text:
+            print(f"⚠️ وظیفه '{task_text}' قبلاً اضافه شده.")
+            return
+    tasks.append({"text": task_text, "done": False})
+    print(f"✅ وظیفه '{task_text}' اضافه شد.")
+    save_tasks()
 
-def remove_task(task):
-    if task in tasks:
-        tasks.remove(task)
-        print(f"🗑️ وظیفه '{task}' حذف شد.")
-        save_tasks()
-    else:
-        print(f"⚠️ وظیفه '{task}' پیدا نشد.")
+def remove_task(task_text):
+    for task in tasks:
+        if task["text"] == task_text:
+            tasks.remove(task)
+            print(f"🗑️ وظیفه '{task_text}' حذف شد.")
+            save_tasks()
+            return
+    print(f"⚠️ وظیفه '{task_text}' پیدا نشد.")
+
+def mark_done(task_text):
+    for task in tasks:
+        if task["text"] == task_text:
+            task["done"] = True
+            print(f"✅ وظیفه '{task_text}' به عنوان انجام‌شده علامت‌گذاری شد.")
+            save_tasks()
+            return
+    print(f"⚠️ وظیفه '{task_text}' پیدا نشد.")
 
 def list_tasks():
     if tasks:
         print("📋 لیست وظایف:")
         for i, task in enumerate(tasks, 1):
-            print(f"{i}. {task}")
+            status = "✅" if task["done"] else "🔲"
+            print(f"{i}. {status} {task['text']}")
         print(f"🔢 تعداد کل وظایف: {len(tasks)}")
     else:
         print("هیچ وظیفه‌ای ثبت نشده.")
@@ -50,7 +64,8 @@ def show_menu():
     print("1. اضافه کردن وظیفه")
     print("2. حذف وظیفه")
     print("3. نمایش وظایف")
-    print("4. خروج")
+    print("4. علامت‌گذاری وظیفه به عنوان انجام‌شده")
+    print("5. خروج")
 
 def welcome():
     print("👋 خوش آمدی به برنامه مدیریت وظایف روزانه!")
@@ -72,6 +87,9 @@ if __name__ == "__main__":
         elif choice == "3":
             list_tasks()
         elif choice == "4":
+            task = input("وظیفه‌ای که انجام شده: ")
+            mark_done(task)
+        elif choice == "5":
             print("خروج از برنامه. موفق باشی! 👋")
             break
         else:
