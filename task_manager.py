@@ -10,7 +10,7 @@ def load_tasks():
                 if len(parts) == 2:
                     task, status = parts
                     tasks.append({"text": task, "done": status == "done"})
-        print(f"📦 {len(tasks)} وظیفه بارگذاری شد.")  # 👈 تغییر مفید یک‌خطی
+        print(f"📦 {len(tasks)} وظیفه بارگذاری شد.")
     except FileNotFoundError:
         pass
 
@@ -47,6 +47,15 @@ def mark_done(task_text):
             return
     print(f"⚠️ وظیفه '{task_text}' پیدا نشد.")
 
+def edit_task(old_text, new_text):
+    for task in tasks:
+        if task["text"] == old_text:
+            task["text"] = new_text
+            print(f"✏️ وظیفه '{old_text}' به '{new_text}' تغییر یافت.")
+            save_tasks()
+            return
+    print(f"⚠️ وظیفه '{old_text}' پیدا نشد.")
+
 def list_tasks():
     if tasks:
         print("📋 لیست وظایف:")
@@ -63,7 +72,8 @@ def show_menu():
     print("2. حذف وظیفه")
     print("3. نمایش وظایف")
     print("4. علامت‌گذاری وظیفه به عنوان انجام‌شده")
-    print("5. خروج")
+    print("5. ویرایش متن وظیفه")
+    print("6. خروج")
 
 def welcome():
     print("👋 خوش آمدی به برنامه مدیریت وظایف روزانه!")
@@ -88,6 +98,10 @@ if __name__ == "__main__":
             task = input("وظیفه‌ای که انجام شده: ")
             mark_done(task)
         elif choice == "5":
+            old_text = input("متن فعلی وظیفه: ")
+            new_text = input("متن جدید وظیفه: ")
+            edit_task(old_text, new_text)
+        elif choice == "6":
             print("خروج از برنامه. موفق باشی! 👋")
             break
         else:
