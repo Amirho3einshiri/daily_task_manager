@@ -86,6 +86,17 @@ def list_done_tasks():
     else:
         print("⏳ هنوز هیچ وظیفه‌ای انجام نشده.")
 
+def search_tasks(keyword):
+    results = [task for task in tasks if keyword.lower() in task["text"].lower()]
+    if results:
+        print(f"🔍 وظایف شامل '{keyword}':")
+        for i, task in enumerate(results, 1):
+            status = "✅" if task["done"] else "🔲"
+            print(f"{i}. {status} {task['text']}")
+        print(f"📌 تعداد نتایج: {len(results)}")
+    else:
+        print(f"❌ هیچ وظیفه‌ای شامل '{keyword}' پیدا نشد.")
+
 def show_menu():
     print("\n--- منوی مدیریت وظایف ---")
     print("1. اضافه کردن وظیفه")
@@ -95,7 +106,8 @@ def show_menu():
     print("5. ویرایش متن وظیفه")
     print("6. خروج")
     print("7. نمایش فقط وظایف انجام‌نشده")
-    print("8. نمایش فقط وظایف انجام‌شده")  # گزینه جدید
+    print("8. نمایش فقط وظایف انجام‌شده")
+    print("9. جستجوی وظیفه بر اساس کلمه")  # گزینه جدید
 
 def welcome():
     print("👋 خوش آمدی به برنامه مدیریت وظایف روزانه!")
@@ -130,5 +142,8 @@ if __name__ == "__main__":
             list_pending_tasks()
         elif choice == "8":
             list_done_tasks()
+        elif choice == "9":
+            keyword = input("کلمه‌ای برای جستجو وارد کن: ")
+            search_tasks(keyword)
         else:
             print("❌ گزینه نامعتبر. لطفاً دوباره تلاش کن.")
