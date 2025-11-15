@@ -1,4 +1,3 @@
-#comment
 tasks = []
 
 FILENAME = "tasks.txt"
