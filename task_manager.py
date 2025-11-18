@@ -1,4 +1,3 @@
-# task
 tasks = []
 
 FILENAME = "tasks.txt"
