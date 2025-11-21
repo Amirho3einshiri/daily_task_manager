@@ -1,4 +1,3 @@
-# fvuo;
 tasks = []
 
 FILENAME = "tasks.txt"
