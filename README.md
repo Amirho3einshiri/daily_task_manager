@@ -18,9 +18,7 @@ No external libraries required — runs on pure Python!
 
 🚀 Demo
 When you run the app, you'll see a clean menu like this:
-======
-       Task Manager Menu
-======       
+       Task Manager Menu      
 1. Add task
 2. Remove task
 3. List all tasks
