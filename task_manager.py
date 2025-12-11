@@ -1,161 +1,245 @@
-# 
+"""
+A simple command-line task management application (To-Do List).
+Tasks are persisted in a text file with format: task_text||status
+"""
+
+from pathlib import Path
+
+FILENAME = Path("tasks.txt")
 tasks = []
 
-FILENAME = "tasks.txt"
 
-def load_tasks():
+def load_tasks() -> None:
+    """Load tasks from the file into memory."""
+    if not FILENAME.exists():
+        return
+
     try:
-        with open(FILENAME, "r", encoding="utf-8") as f:
+        with FILENAME.open("r", encoding="utf-8") as f:
             for line in f:
-                parts = line.strip().split("||")
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split("||")
                 if len(parts) == 2:
-                    task, status = parts
-                    tasks.append({"text": task, "done": status == "done"})
-        print(f"📦 {len(tasks)} وظیفه بارگذاری شد.")
-    except FileNotFoundError:
-        pass
+                    task_text, status = parts
+                    tasks.append({"text": task_text, "done": status == "done"})
+        print(f"📦 Loaded {len(tasks)} task(s).")
+    except Exception as e:
+        print(f"⚠️ Error loading tasks: {e}")
 
-def save_tasks():
-    with open(FILENAME, "w", encoding="utf-8") as f:
-        for task in tasks:
-            status = "done" if task["done"] else "todo"
-            f.write(f"{task['text']}||{status}\n")
 
-def add_task(task_text):
+def save_tasks() -> None:
+    """Save current tasks to the file."""
+    try:
+        with FILENAME.open("w", encoding="utf-8") as f:
+            for task in tasks:
+                status = "done" if task["done"] else "todo"
+                f.write(f"{task['text']}||{status}\n")
+    except Exception as e:
+        print(f"⚠️ Error saving tasks: {e}")
+
+
+def find_task(task_text: str):
+    """Find a task by exact text match (case-sensitive). Returns task dict or None."""
+    task_text = task_text.strip()
     for task in tasks:
         if task["text"] == task_text:
-            print(f"⚠️ وظیفه '{task_text}' قبلاً اضافه شده.")
-            return
+            return task
+    return None
+
+
+def add_task(task_text: str) -> None:
+    """Add a new task if it doesn't already exist."""
+    task_text = task_text.strip()
+    if not task_text:
+        print("⚠️ Task text cannot be empty.")
+        return
+
+    if find_task(task_text):
+        print(f"⚠️ Task '{task_text}' already exists.")
+        return
+
     tasks.append({"text": task_text, "done": False})
-    print(f"✅ وظیفه '{task_text}' اضافه شد.")
+    print(f"✅ Task '{task_text}' added.")
     save_tasks()
 
-def remove_task(task_text):
-    for task in tasks:
-        if task["text"] == task_text:
-            tasks.remove(task)
-            print(f"🗑️ وظیفه '{task_text}' حذف شد.")
-            save_tasks()
-            return
-    print(f"⚠️ وظیفه '{task_text}' پیدا نشد.")
 
-def mark_done(task_text):
-    for task in tasks:
-        if task["text"] == task_text:
-            task["done"] = True
-            print(f"✅ وظیفه '{task_text}' به عنوان انجام‌شده علامت‌گذاری شد.")
-            save_tasks()
-            return
-    print(f"⚠️ وظیفه '{task_text}' پیدا نشد.")
-
-def edit_task(old_text, new_text):
-    for task in tasks:
-        if task["text"] == old_text:
-            task["text"] = new_text
-            print(f"✏️ وظیفه '{old_text}' به '{new_text}' تغییر یافت.")
-            save_tasks()
-            return
-    print(f"⚠️ وظیفه '{old_text}' پیدا نشد.")
-
-def list_tasks():
-    if tasks:
-        print("📋 لیست وظایف:")
-        for i, task in enumerate(tasks, 1):
-            status = "✅" if task["done"] else "🔲"
-            print(f"{i}. {status} {task['text']}")
-        print(f"🔢 تعداد کل وظایف: {len(tasks)}")
+def remove_task(task_text: str) -> None:
+    """Remove a task by exact text."""
+    task = find_task(task_text)
+    if task:
+        tasks.remove(task)
+        print(f"🗑️ Task '{task_text}' removed.")
+        save_tasks()
     else:
-        print("هیچ وظیفه‌ای ثبت نشده.")
+        print(f"⚠️ Task '{task_text}' not found.")
 
-def list_pending_tasks():
-    pending = [task for task in tasks if not task["done"]]
+
+def mark_done(task_text: str) -> None:
+    """Mark a task as completed."""
+    task = find_task(task_text)
+    if task:
+        task["done"] = True
+        print(f"✅ Task '{task_text}' marked as done.")
+        save_tasks()
+    else:
+        print(f"⚠️ Task '{task_text}' not found.")
+
+
+def edit_task(old_text: str, new_text: str) -> None:
+    """Edit the text of an existing task."""
+    old_text = old_text.strip()
+    new_text = new_text.strip()
+    if not new_text:
+        print("⚠️ New task text cannot be empty.")
+        return
+
+    task = find_task(old_text)
+    if task:
+        task["text"] = new_text
+        print(f"✏️ Task '{old_text}' updated to '{new_text}'.")
+        save_tasks()
+    else:
+        print(f"⚠️ Task '{old_text}' not found.")
+
+
+def list_tasks() -> None:
+    """Display all tasks."""
+    if not tasks:
+        print("No tasks registered yet.")
+        return
+
+    print("📋 All Tasks:")
+    for i, task in enumerate(tasks, 1):
+        status = "✅" if task["done"] else "🔲"
+        print(f"{i}. {status} {task['text']}")
+    print(f"🔢 Total tasks: {len(tasks)}")
+
+
+def list_pending_tasks() -> None:
+    """Display only pending tasks."""
+    pending = [t for t in tasks if not t["done"]]
     if pending:
-        print("🔲 وظایف انجام‌نشده:")
+        print("🔲 Pending Tasks:")
         for i, task in enumerate(pending, 1):
             print(f"{i}. {task['text']}")
-        print(f"📌 تعداد وظایف انجام‌نشده: {len(pending)}")
+        print(f"📌 Count: {len(pending)}")
     else:
-        print("🎉 همه وظایف انجام شده!")
+        print("🎉 All tasks completed!")
 
-def list_done_tasks():
-    done = [task for task in tasks if task["done"]]
+
+def list_done_tasks() -> None:
+    """Display only completed tasks."""
+    done = [t for t in tasks if t["done"]]
     if done:
-        print("✅ وظایف انجام‌شده:")
+        print("✅ Completed Tasks:")
         for i, task in enumerate(done, 1):
             print(f"{i}. {task['text']}")
-        print(f"📌 تعداد وظایف انجام‌شده: {len(done)}")
+        print(f"📌 Count: {len(done)}")
     else:
-        print("⏳ هنوز هیچ وظیفه‌ای انجام نشده.")
+        print("⏳ No tasks completed yet.")
 
-def search_tasks(keyword):
-    results = [task for task in tasks if keyword.lower() in task["text"].lower()]
+
+def search_tasks(keyword: str) -> None:
+    """Search tasks containing the keyword (case-insensitive)."""
+    keyword = keyword.strip().lower()
+    if not keyword:
+        print("⚠️ Search keyword cannot be empty.")
+        return
+
+    results = [t for t in tasks if keyword in t["text"].lower()]
     if results:
-        print(f"🔍 وظایف شامل '{keyword}':")
+        print(f"🔍 Search results for '{keyword}':")
         for i, task in enumerate(results, 1):
             status = "✅" if task["done"] else "🔲"
             print(f"{i}. {status} {task['text']}")
-        print(f"📌 تعداد نتایج: {len(results)}")
+        print(f"📌 Found: {len(results)} result(s)")
     else:
-        print(f"❌ هیچ وظیفه‌ای شامل '{keyword}' پیدا نشد.")
+        print(f"❌ No tasks found containing '{keyword}'.")
 
-def clear_done_tasks():
+
+def clear_done_tasks() -> None:
+    """Remove all completed tasks."""
     global tasks
-    done_count = len([task for task in tasks if task["done"]])
-    tasks = [task for task in tasks if not task["done"]]
+    done_count = sum(1 for t in tasks if t["done"])
+    if done_count == 0:
+        print("No completed tasks to clear.")
+        return
+
+    tasks = [t for t in tasks if not t["done"]]
     save_tasks()
-    print(f"🧹 {done_count} وظیفه انجام‌شده حذف شد.")
+    print(f"🧹 Cleared {done_count} completed task(s).")
 
-def show_menu():
-    print("\n--- منوی مدیریت وظایف ---")
-    print("1. اضافه کردن وظیفه")
-    print("2. حذف وظیفه")
-    print("3. نمایش وظایف")
-    print("4. علامت‌گذاری وظیفه به عنوان انجام‌شده")
-    print("5. ویرایش متن وظیفه")
-    print("6. خروج")
-    print("7. نمایش فقط وظایف انجام‌نشده")
-    print("8. نمایش فقط وظایف انجام‌شده")
-    print("9. جستجوی وظیفه بر اساس کلمه")
-    print("10. حذف همه وظایف انجام‌شده")  # گزینه جدید
 
-def welcome():
-    print("👋 خوش آمدی به برنامه مدیریت وظایف روزانه!")
-    print("✨ با این ابزار ساده می‌تونی وظایف‌ت رو بهتر مدیریت کنی.")
+def show_menu() -> None:
+    """Display the main menu."""
+    print("\n" + "="*30)
+    print("   Task Manager Menu")
+    print("="*30)
+    print("1. Add task")
+    print("2. Remove task")
+    print("3. List all tasks")
+    print("4. Mark task as done")
+    print("5. Edit task")
+    print("6. List pending tasks")
+    print("7. List completed tasks")
+    print("8. Search tasks")
+    print("9. Clear completed tasks")
+    print("10. Exit")
+    print("="*30)
 
-if __name__ == "__main__":
+
+def main() -> None:
+    """Main program loop."""
     load_tasks()
-    welcome()
+    print("👋 Welcome to the Daily Task Manager!")
+    print("✨ Manage your tasks easily with this simple tool.\n")
+
     while True:
         show_menu()
-        choice = input("انتخاب شما: ")
+        choice = input("\nYour choice: ").strip()
 
         if choice == "1":
-            task = input("متن وظیفه: ")
+            task = input("Enter task text: ")
             add_task(task)
+
         elif choice == "2":
-            task = input("وظیفه‌ای که می‌خوای حذف کنی: ")
+            task = input("Enter task text to remove: ")
             remove_task(task)
+
         elif choice == "3":
             list_tasks()
-        elif choice == "4":
-            task = input("وظیفه‌ای که انجام شده: ")
-            mark_done(task)
-        elif choice == "5":
-            old_text = input("متن فعلی وظیفه: ")
-            new_text = input("متن جدید وظیفه: ")
-            edit_task(old_text, new_text)
-        elif choice == "6":
-            print("خروج از برنامه. موفق باشی! 👋")
-            break
-        elif choice == "7":
-            list_pending_tasks()
-        elif choice == "8":
-            list_done_tasks()
-        elif choice == "9":
-            keyword = input("کلمه‌ای برای جستجو وارد کن: ")
-            search_tasks(keyword)
-        elif choice == "10":
-            clear_done_tasks()
-        else:
-            print("❌ گزینه نامعتبر. لطفاً دوباره تلاش کن.")
 
+        elif choice == "4":
+            task = input("Enter completed task text: ")
+            mark_done(task)
+
+        elif choice == "5":
+            old = input("Current task text: ")
+            new = input("New task text: ")
+            edit_task(old, new)
+
+        elif choice == "6":
+            list_pending_tasks()
+
+        elif choice == "7":
+            list_done_tasks()
+
+        elif choice == "8":
+            keyword = input("Enter search keyword: ")
+            search_tasks(keyword)
+
+        elif choice == "9":
+            clear_done_tasks()
+
+        elif choice == "10":
+            print("\nGoodbye! Have a productive day! 👋\n")
+            break
+
+        else:
+            print("❌ Invalid option. Please enter a number between 1 and 10.")
+
+
+if __name__ == "__main__":
+    main()
