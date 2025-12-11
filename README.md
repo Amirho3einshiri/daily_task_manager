@@ -29,7 +29,6 @@ When you run the app, you'll see a clean menu like this:
 8. Search tasks
 9. Clear completed tasks
 10. Exit
-==============================
 
 ⚙️ Requirements
 
